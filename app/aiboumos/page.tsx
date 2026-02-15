@@ -142,7 +142,7 @@ export default function AiBouMoS() {
                     </button>
                     {selectedAiBou.files.kyara && (
                       <button
-                        onClick={() => handleDownload(selectedAiBou.files.kyara, `${selectedAiBou.id}-KYARA.md`)}
+                        onClick={() => handleDownload(selectedAiBou.files.kyara!, `${selectedAiBou.id}-KYARA.md`)}
                         className="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded transition-colors text-left"
                       >
                         🎭 KYARA.md (Character Profile)
@@ -150,7 +150,7 @@ export default function AiBouMoS() {
                     )}
                     {selectedAiBou.files.metale && (
                       <button
-                        onClick={() => handleDownload(selectedAiBou.files.metale, `${selectedAiBou.id}-METALE.md`)}
+                        onClick={() => handleDownload(selectedAiBou.files.metale!, `${selectedAiBou.id}-METALE.md`)}
                         className="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded transition-colors text-left"
                       >
                         📖 METALE.md (Meta-Tale)
