@@ -1,0 +1,86 @@
+{
+  "lessons": [
+    {
+      "id": "00-welcome-to-prappt",
+      "title": "Welcome to the PrAPPt Framework",
+      "difficulty": "foundational",
+      "prerequisites": [],
+      "estimatedTime": "6 min",
+      "tags": ["prappt", "overview"],
+      "updated": "2026-01-08"
+    },
+    {
+      "id": "01-semantic-weight",
+      "title": "Semantic Weight: Manners as Technical Inputs",
+      "difficulty": "foundational",
+      "prerequisites": ["00-welcome-to-prappt"],
+      "estimatedTime": "10 min",
+      "tags": ["semantic-weight", "manners", "vectors"],
+      "updated": "2026-01-08"
+    },
+    {
+      "id": "02-discovery-phase",
+      "title": "Discovery Phase: Stream of Consciousness → Proto-AiBou",
+      "difficulty": "foundational",
+      "prerequisites": ["01-semantic-weight"],
+      "estimatedTime": "15 min",
+      "tags": ["discovery", "proto-aibou", "atomic-development"],
+      "updated": "2026-01-08"
+    },
+    {
+      "id": "03-construction-phase",
+      "title": "Construction Phase: Build the PrAPPt Script (Backwards)",
+      "difficulty": "foundational",
+      "prerequisites": ["02-discovery-phase"],
+      "estimatedTime": "18 min",
+      "tags": ["product", "regulation", "approach", "persona", "purpose", "trigger"],
+      "updated": "2026-01-08"
+    },
+    {
+      "id": "04-activation-iteration",
+      "title": "Activation & Iteration: Trigger, Test, Patch",
+      "difficulty": "foundational",
+      "prerequisites": ["03-construction-phase"],
+      "estimatedTime": "14 min",
+      "tags": ["activation", "testing", "drift", "patch-mentality"],
+      "updated": "2026-01-08"
+    }
+  ],
+  "hierarchy": {
+    "foundational": [
+      {
+        "id": "00-welcome-to-prappt",
+        "title": "Welcome to the PrAPPt Framework",
+        "difficulty": "foundational",
+        "estimatedTime": "6 min"
+      },
+      {
+        "id": "01-semantic-weight",
+        "title": "Semantic Weight: Manners as Technical Inputs",
+        "difficulty": "foundational",
+        "estimatedTime": "10 min"
+      },
+      {
+        "id": "02-discovery-phase",
+        "title": "Discovery Phase: Stream of Consciousness → Proto-AiBou",
+        "difficulty": "foundational",
+        "estimatedTime": "15 min"
+      },
+      {
+        "id": "03-construction-phase",
+        "title": "Construction Phase: Build the PrAPPt Script (Backwards)",
+        "difficulty": "foundational",
+        "estimatedTime": "18 min"
+      },
+      {
+        "id": "04-activation-iteration",
+        "title": "Activation & Iteration: Trigger, Test, Patch",
+        "difficulty": "foundational",
+        "estimatedTime": "14 min"
+      }
+    ],
+    "intermediate": [],
+    "advanced": [],
+    "expert": []
+  }
+}
