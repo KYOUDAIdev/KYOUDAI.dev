@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
 export default function PrAPPt() {
-  redirect('/prappt/index.html');
+  redirect('/PrAPPt/index.html');
 }

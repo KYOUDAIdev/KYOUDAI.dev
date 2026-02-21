@@ -90,13 +90,13 @@ KYOUDAI_ROOT/
 
 ### RespEngr Article
 
-1. Create `/public/respengr/My-Article.md`
+1. Create `/public/RespEngr/RespEngr_Desktop/My-Article.md`
 2. Run `npm run catch:respengr`
 3. Article appears as desktop icon
 
 ### AiBou Card
 
-1. Create `/public/aiboumos/yattai/MyAiBou/`
+1. Create `/public/AiBouMoS/Cards_YATTAi/MyAiBou/`
 2. Add `YATTAI.md` (with frontmatter) and `PROFILE.jpg`
 3. Run `npm run catch:aiboumos`
 4. Card appears in marketplace

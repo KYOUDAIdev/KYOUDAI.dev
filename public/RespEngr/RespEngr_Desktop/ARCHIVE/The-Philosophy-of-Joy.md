@@ -41,7 +41,7 @@ RespEngr embodies "chaotic good" - organized chaos that sparks creativity:
 - Desktop metaphor = Familiar yet fresh
 - Markdown content = Simple yet powerful
 
-![Joy in Code](/respengr/owchie/joy-code.jpg)
+![Joy in Code](/RespEngr/RespEngr_ImgPool/joy-code.jpg)
 
 ## Practice
 

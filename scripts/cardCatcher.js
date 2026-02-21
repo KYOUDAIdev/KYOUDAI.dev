@@ -1,6 +1,6 @@
 /**
  * cardCatcher.js
- * Scans /public/aiboumos/yattai/{AiBou} directories and generates card data
+ * Scans /public/AiBouMoS/Cards_YATTAi/{AiBou} directories and generates card data
  * Each AiBou must have: YATTAI.md, PROFILE.jpg, and optionally KYARA.md, METALE.md
  */
 
@@ -11,9 +11,15 @@ const matter = require('gray-matter');
 const YATTAI_DIR = path.join(__dirname, '../public/AiBouMoS/Cards_YATTAi');
 const OUTPUT_JSON = path.join(__dirname, '../public/data/aiboumos.json');
 
-// Required files for a valid AiBou card
-const REQUIRED_FILES = ['YATTAI.md', 'PROFILE.jpg'];
-const OPTIONAL_FILES = ['KYARA.md', 'METALE.md', 'IMAGE.jpg'];
+// Required files for a valid AiBou card (case-insensitive patterns)
+const REQUIRED_PATTERNS = {
+  yattai: /\.YATTAi\.md$/i,
+  profile: /\.Profile\.jpg$/i
+};
+const OPTIONAL_PATTERNS = {
+  card: /\.CARD\.md$/i,
+  image: /\.IMAGE\.jpg$/i
+};
 
 function parseYattaiFile(filePath) {
   const content = fs.readFileSync(filePath, 'utf-8');
@@ -25,18 +31,24 @@ function parseYattaiFile(filePath) {
   };
 }
 
+function findFile(files, pattern) {
+  return files.find(f => pattern.test(f));
+}
+
 function scanAiBou(aibouName, aibouPath) {
   const files = fs.readdirSync(aibouPath);
   
-  // Check required files
-  const hasRequired = REQUIRED_FILES.every(file => files.includes(file));
-  if (!hasRequired) {
+  // Check required files using patterns
+  const yattaiFile = findFile(files, REQUIRED_PATTERNS.yattai);
+  const profileFile = findFile(files, REQUIRED_PATTERNS.profile);
+  
+  if (!yattaiFile || !profileFile) {
     console.warn(`⚠️  ${aibouName} missing required files, skipping...`);
     return null;
   }
 
-  // Parse YATTAI.md
-  const yattaiPath = path.join(aibouPath, 'YATTAI.md');
+  // Parse YATTAi.md
+  const yattaiPath = path.join(aibouPath, yattaiFile);
   const yattai = parseYattaiFile(yattaiPath);
 
   // Build card data
@@ -47,21 +59,21 @@ function scanAiBou(aibouName, aibouPath) {
     description: yattai.description,
     role: yattai.frontmatter.role || 'AI Agent',
     color: yattai.frontmatter.color || '#8040C0',
-    profileImage: `/AiBouMoS/Cards_YATTAi/${aibouName}/PROFILE.jpg`,
+    profileImage: `/AiBouMoS/Cards_YATTAi/${aibouName}/${profileFile}`,
     files: {
-      yattai: `/AiBouMoS/Cards_YATTAi/${aibouName}/YATTAI.md`,
+      yattai: `/AiBouMoS/Cards_YATTAi/${aibouName}/${yattaiFile}`,
     },
   };
 
   // Add optional files
-  if (files.includes('KYARA.md')) {
-    card.files.kyara = `/AiBouMoS/Cards_YATTAi/${aibouName}/KYARA.md`;
+  const cardFile = findFile(files, OPTIONAL_PATTERNS.card);
+  if (cardFile) {
+    card.files.card = `/AiBouMoS/Cards_YATTAi/${aibouName}/${cardFile}`;
   }
-  if (files.includes('METALE.md')) {
-    card.files.metale = `/AiBouMoS/Cards_YATTAi/${aibouName}/METALE.md`;
-  }
-  if (files.includes('IMAGE.jpg')) {
-    card.files.image = `/AiBouMoS/Cards_YATTAi/${aibouName}/IMAGE.jpg`;
+  
+  const imageFile = findFile(files, OPTIONAL_PATTERNS.image);
+  if (imageFile) {
+    card.files.image = `/AiBouMoS/Cards_YATTAi/${aibouName}/${imageFile}`;
   }
 
   // Extract commands from YATTAI.md

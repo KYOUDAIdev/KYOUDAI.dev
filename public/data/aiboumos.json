@@ -1,34 +1,34 @@
 {
   "cards": [
     {
-      "id": "aithena",
+      "id": "aithena_yattai",
       "name": "AiTHENA",
       "tagline": "The Architect of Digital Blueprints",
       "description": "AiTHENA specializes in creating comprehensive SiteMapUJ documents that translate vision into actionable architecture.\r\n\r\n## Capabilities\r\n\r\n- Natural language site architecture design\r\n- User journey mapping\r\n- Component specification\r\n- Logic flow documentation\r\n\r\n## Usage\r\n\r\nDownload the AiTHENA PrAPPt script and use with your preferred AI assistant:\r\n\r\n```bash\r\n# Example prompt structure\r\n\"Using the AiTHENA protocol, create a SiteMapUJ for [project description]\"\r\n```\r\n\r\n## Output Format\r\n\r\nAiTHENA generates markdown documents with three perspectives:\r\n1. The Atlas (File Tree)\r\n2. The Canvas (UI Layout Grid)\r\n3. The Codex (Logic & Legend)",
       "role": "SiteMapUJ Development",
       "color": "#FF6B9D",
-      "profileImage": "/aiboumos/yattai/AiTHENA/PROFILE.jpg",
+      "profileImage": "/AiBouMoS/Cards_YATTAi/AiTHENA_YATTAi/AiTHENA.Profile.jpg",
       "files": {
-        "yattai": "/aiboumos/yattai/AiTHENA/YATTAI.md",
-        "kyara": "/aiboumos/yattai/AiTHENA/KYARA.md"
+        "yattai": "/AiBouMoS/Cards_YATTAi/AiTHENA_YATTAi/AiTHENA.YATTAi.md",
+        "card": "/AiBouMoS/Cards_YATTAi/AiTHENA_YATTAi/AiTHENA.CARD.md"
       },
       "commands": []
     },
     {
-      "id": "eudaimonium",
+      "id": "eudaimonium_yattai",
       "name": "EudAImonium",
       "tagline": "The Philosopher of Flow",
       "description": "EudAImonium crafts articles and research notes for the RespEngr workspace, focusing on the intersection of joy, creativity, and technical excellence.\r\n\r\n## Capabilities\r\n\r\n- Long-form technical writing\r\n- Research synthesis\r\n- Philosophical exploration of development practices\r\n- Markdown article generation\r\n\r\n## Usage\r\n\r\n```bash\r\n# Generate RespEngr article\r\n\"EudAImonium, write an article about [topic] for RespEngr\"\r\n```\r\n\r\n## Content Style\r\n\r\n- Playful yet profound\r\n- Technical accuracy with emotional resonance\r\n- Embraces chaos and creativity\r\n- Uses the RespEngr voice: \"Chaotic Good\"",
       "role": "RespEngr Content Creation",
       "color": "#FF00FF",
-      "profileImage": "/aiboumos/yattai/EudAImonium/PROFILE.jpg",
+      "profileImage": "/AiBouMoS/Cards_YATTAi/EudAImonium_YATTAi/EudAImonium.Profile.jpg",
       "files": {
-        "yattai": "/aiboumos/yattai/EudAImonium/YATTAI.md",
-        "kyara": "/aiboumos/yattai/EudAImonium/KYARA.md"
+        "yattai": "/AiBouMoS/Cards_YATTAi/EudAImonium_YATTAi/EudAImonium.YATTAi.md",
+        "card": "/AiBouMoS/Cards_YATTAi/EudAImonium_YATTAi/EudAImonium.CARD.md"
       },
       "commands": []
     }
   ],
-  "generatedAt": "2026-02-15T19:05:21.100Z",
+  "generatedAt": "2026-02-21T22:37:10.233Z",
   "count": 2
 }

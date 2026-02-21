@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadCurriculum() {
   try {
-    const response = await fetch('/prappt/api/curriculum.json');
+    const response = await fetch('/PrAPPt/api/curriculum.json');
     if (!response.ok) throw new Error('Failed to load curriculum');
      
     STATE.curriculum = await response.json();
@@ -132,7 +132,7 @@ async function loadLesson(lessonId) {
     }
      
     // Fetch lesson content
-    const response = await fetch(`/prappt/lessons/${lessonId}.md`);
+    const response = await fetch(`/PrAPPt/Lessons/${lessonId}.md`);
     if (!response.ok) throw new Error('Lesson file not found');
      
     const markdown = await response.text();
