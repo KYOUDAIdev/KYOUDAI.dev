@@ -10,10 +10,10 @@ const matter = require('gray-matter');
 const { marked } = require('marked');
 
 const CONFIG = {
-  vaultDir: path.join(__dirname, '../public/respengr'),
-  owchieDir: path.join(__dirname, '../public/respengr/owchie'),
+  vaultDir: path.join(__dirname, '../public/RespEngr/RespEngr_Desktop'),
+  owchieDir: path.join(__dirname, '../public/RespEngr/RespEngr_ImgPool'),
   outputFile: path.join(__dirname, '../public/data/respengr.json'),
-  ignorePatterns: ['.obsidian', 'owchie'], // Ignore from file tree
+  ignorePatterns: ['.obsidian', 'RespEngr_ImgPool'], // Ignore from file tree
   watchMode: process.argv.includes('--watch')
 };
 
@@ -141,7 +141,7 @@ function scanOwchieImages(articles) {
     return {
       id: `owchie-${baseName.toLowerCase().replace(/\s+/g, '-')}`,
       filename: imageFile,
-      path: `/respengr/owchie/${imageFile}`,
+      path: `/RespEngr/RespEngr_ImgPool/${imageFile}`,
       pairedArticleId: pairedArticle ? pairedArticle.id : undefined
     };
   });

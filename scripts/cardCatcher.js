@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const matter = require('gray-matter');
 
-const YATTAI_DIR = path.join(__dirname, '../public/aiboumos/yattai');
+const YATTAI_DIR = path.join(__dirname, '../public/AiBouMoS/Cards_YATTAi');
 const OUTPUT_JSON = path.join(__dirname, '../public/data/aiboumos.json');
 
 // Required files for a valid AiBou card
@@ -47,21 +47,21 @@ function scanAiBou(aibouName, aibouPath) {
     description: yattai.description,
     role: yattai.frontmatter.role || 'AI Agent',
     color: yattai.frontmatter.color || '#8040C0',
-    profileImage: `/aiboumos/yattai/${aibouName}/PROFILE.jpg`,
+    profileImage: `/AiBouMoS/Cards_YATTAi/${aibouName}/PROFILE.jpg`,
     files: {
-      yattai: `/aiboumos/yattai/${aibouName}/YATTAI.md`,
+      yattai: `/AiBouMoS/Cards_YATTAi/${aibouName}/YATTAI.md`,
     },
   };
 
   // Add optional files
   if (files.includes('KYARA.md')) {
-    card.files.kyara = `/aiboumos/yattai/${aibouName}/KYARA.md`;
+    card.files.kyara = `/AiBouMoS/Cards_YATTAi/${aibouName}/KYARA.md`;
   }
   if (files.includes('METALE.md')) {
-    card.files.metale = `/aiboumos/yattai/${aibouName}/METALE.md`;
+    card.files.metale = `/AiBouMoS/Cards_YATTAi/${aibouName}/METALE.md`;
   }
   if (files.includes('IMAGE.jpg')) {
-    card.files.image = `/aiboumos/yattai/${aibouName}/IMAGE.jpg`;
+    card.files.image = `/AiBouMoS/Cards_YATTAi/${aibouName}/IMAGE.jpg`;
   }
 
   // Extract commands from YATTAI.md
