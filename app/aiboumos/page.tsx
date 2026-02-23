@@ -262,7 +262,7 @@ export default function AiBouMoS() {
                   </button>
                   {selectedAiBou.files.card && (
                     <button
-                      onClick={() => handleDownload(selectedAiBou.files.card, `${selectedAiBou.id}-CARD.md`)}
+                      onClick={() => handleDownload(selectedAiBou.files.card!, `${selectedAiBou.id}-CARD.md`)}
                       className="w-full px-4 py-3 bg-gray-800 hover:bg-gray-700 rounded transition-colors text-left flex items-center gap-3"
                     >
                       <span>🎴</span> {selectedAiBou.name}.CARD.md
