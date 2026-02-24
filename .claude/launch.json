@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "Next.js Dev",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
+      "runtimeArgs": ["C:\\Users\\ai2Aibou\\Dropbox\\KYOUDAI_Civilization\\kyoudaidev\\node_modules\\next\\dist\\bin\\next", "dev"],
       "port": 3000
     }
   ]
