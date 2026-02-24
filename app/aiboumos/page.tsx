@@ -59,7 +59,18 @@ export default function AiBouMoS() {
   useEffect(() => {
     fetch('/data/aiboumos.json')
       .then(r => r.json())
-      .then(setData)
+      .then((raw: AiBouMoSData) => {
+        // Normalize cards so old-schema JSON won't crash on missing fields
+        const cards = raw.cards.map(c => ({
+          ...c,
+          keywords: Array.isArray(c.keywords) ? c.keywords : [],
+          houseColor: c.houseColor || '#8040C0',
+          yattaiImage: c.yattaiImage || '',
+          heroImage: c.heroImage || '',
+          description: c.description || '',
+        }));
+        setData({ ...raw, cards });
+      })
       .catch(console.error);
   }, []);
 
