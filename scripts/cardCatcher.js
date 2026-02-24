@@ -1,34 +1,70 @@
 /**
- * cardCatcher.js
- * Scans /public/AiBouMoS/Cards_YATTAi/{AiBou} directories and generates card data
- * Each AiBou must have: YATTAI.md, PROFILE.jpg, and optionally KYARA.md, METALE.md
+ * cardCatcher.js - SSOT-Compliant Data Hydration Pipeline
+ * 
+ * Scans /public/aiboumos/yattai/{AiBou_ID}/ directories per SiteMapUJAi SSOT
+ * 
+ * REQUIRED FILES (per SSOT):
+ *   - {AiBou_ID}.KYARA.md (Primary metadata source)
+ *   - {AiBou_ID}.YATTAi.jpg (Background image for cards)
+ * 
+ * OPTIONAL FILES (per SSOT):
+ *   - {AiBou_ID}.METALE.md (Full narrative/bio)
+ *   - {AiBou_ID}.KYARA-hero.png (Hero avatar for profile)
+ * 
+ * DATA MAPPING (per SSOT):
+ *   KyaraSynth:
+ *     - Image_1: YATTAi.jpg → YATTAI Cards Background_Image
+ *     - Image_2: KYARA-hero.png → AiBou Profile Page Hero_Avatar
+ *   
+ *   KyaraMetale:
+ *     - METALE.md → YATTAI Cards {AiBou_Description} (Truncated)
+ *     - METALE.md → AiBou Profile Page Main Bio (Full)
+ *   
+ *   Kyara:
+ *     - KYARA.md frontmatter → zodiac_keywords → Keyword buttons
+ *     - KYARA.md frontmatter → house_colors → CSS Variables
+ * 
+ * OUTPUT: Returns card array for SSR/build-time hydration (no intermediate JSON)
  */
 
 const fs = require('fs');
 const path = require('path');
 const matter = require('gray-matter');
 
-const YATTAI_DIR = path.join(__dirname, '../public/AiBouMoS/Cards_YATTAi');
-const OUTPUT_JSON = path.join(__dirname, '../public/data/aiboumos.json');
+const YATTAI_DIR = path.join(__dirname, '../public/aiboumos/yattai');
 
-// Required files for a valid AiBou card (case-insensitive patterns)
+// SSOT-compliant file patterns
 const REQUIRED_PATTERNS = {
-  yattai: /\.YATTAi\.md$/i,
-  profile: /\.Profile\.jpg$/i
+  yattaiImage: /\.YATTAi\.jpg$/i,
+  kyara: /\.KYARA\.md$/i
 };
 const OPTIONAL_PATTERNS = {
-  card: /\.CARD\.md$/i,
-  image: /\.IMAGE\.jpg$/i
+  metale: /\.METALE\.md$/i,
+  hero: /\.KYARA-hero\.png$/i
 };
 
-function parseYattaiFile(filePath) {
+function parseMarkdownFile(filePath) {
   const content = fs.readFileSync(filePath, 'utf-8');
   const { data, content: body } = matter(content);
   
   return {
     frontmatter: data,
-    description: body.trim(),
+    content: body.trim(),
   };
+}
+
+function parseKyaraFile(filePath) {
+  try {
+    const parsed = parseMarkdownFile(filePath);
+    return {
+      zodiacKeywords: parsed.frontmatter.zodiac_keywords || [],
+      houseColors: parsed.frontmatter.house_colors || {},
+      ...parsed.frontmatter
+    };
+  } catch (err) {
+    console.warn(`Could not parse KYARA file: ${filePath}`);
+    return null;
+  }
 }
 
 function findFile(files, pattern) {
@@ -38,69 +74,72 @@ function findFile(files, pattern) {
 function scanAiBou(aibouName, aibouPath) {
   const files = fs.readdirSync(aibouPath);
   
-  // Check required files using patterns
-  const yattaiFile = findFile(files, REQUIRED_PATTERNS.yattai);
-  const profileFile = findFile(files, REQUIRED_PATTERNS.profile);
+  // Check required files per SSOT
+  const yattaiImageFile = findFile(files, REQUIRED_PATTERNS.yattaiImage);
+  const kyaraFile = findFile(files, REQUIRED_PATTERNS.kyara);
   
-  if (!yattaiFile || !profileFile) {
-    console.warn(`⚠️  ${aibouName} missing required files, skipping...`);
+  if (!yattaiImageFile || !kyaraFile) {
+    console.warn(`⚠️  ${aibouName} missing required files (YATTAi.jpg, KYARA.md), skipping...`);
     return null;
   }
 
-  // Parse YATTAi.md
-  const yattaiPath = path.join(aibouPath, yattaiFile);
-  const yattai = parseYattaiFile(yattaiPath);
+  // Parse KYARA.md (SSOT primary metadata source)
+  const kyaraPath = path.join(aibouPath, kyaraFile);
+  const kyara = parseKyaraFile(kyaraPath);
+  
+  if (!kyara) {
+    console.warn(`⚠️  ${aibouName} KYARA.md parse failed, skipping...`);
+    return null;
+  }
 
-  // Build card data
+  // Parse METALE.md for description
+  const metaleFile = findFile(files, OPTIONAL_PATTERNS.metale);
+  let description = '';
+  if (metaleFile) {
+    const metalePath = path.join(aibouPath, metaleFile);
+    const metale = parseMarkdownFile(metalePath);
+    description = metale.content;
+  }
+
+  // Build card data per SSOT KyaraSynth + KyaraMetale + Kyara mapping
   const card = {
     id: aibouName.toLowerCase(),
-    name: yattai.frontmatter.name || aibouName,
-    tagline: yattai.frontmatter.tagline || '',
-    description: yattai.description,
-    role: yattai.frontmatter.role || 'AI Agent',
-    color: yattai.frontmatter.color || '#8040C0',
-    profileImage: `/AiBouMoS/Cards_YATTAi/${aibouName}/${profileFile}`,
+    name: kyara.name || aibouName,
+    tagline: kyara.tagline || '',
+    description: description,
+    role: kyara.role || 'AI Agent',
+    color: kyara.color || '#8040C0',
+    zodiacKeywords: kyara.zodiacKeywords || [],
+    houseColors: kyara.houseColors || {},
+    // KyaraSynth Image_1: YATTAi.jpg -> Background_Image
+    backgroundImage: `/aiboumos/yattai/${aibouName}/${yattaiImageFile}`,
     files: {
-      yattai: `/AiBouMoS/Cards_YATTAi/${aibouName}/${yattaiFile}`,
+      kyara: `/aiboumos/yattai/${aibouName}/${kyaraFile}`,
     },
   };
 
-  // Add optional files
-  const cardFile = findFile(files, OPTIONAL_PATTERNS.card);
-  if (cardFile) {
-    card.files.card = `/AiBouMoS/Cards_YATTAi/${aibouName}/${cardFile}`;
-  }
-  
-  const imageFile = findFile(files, OPTIONAL_PATTERNS.image);
-  if (imageFile) {
-    card.files.image = `/AiBouMoS/Cards_YATTAi/${aibouName}/${imageFile}`;
+  // KyaraSynth Image_2: KYARA-hero.png -> Hero_Avatar
+  const heroFile = findFile(files, OPTIONAL_PATTERNS.hero);
+  if (heroFile) {
+    card.heroAvatar = `/aiboumos/yattai/${aibouName}/${heroFile}`;
   }
 
-  // Extract commands from YATTAI.md
-  const commandRegex = /```(?:bash|shell)?\n(.*?)\n```/gs;
-  const commands = [];
-  let match;
-  while ((match = commandRegex.exec(yattai.description)) !== null) {
-    commands.push(match[1].trim());
+  // KyaraMetale: METALE.md -> Main Bio
+  if (metaleFile) {
+    card.files.metale = `/aiboumos/yattai/${aibouName}/${metaleFile}`;
   }
-  card.commands = commands;
 
   return card;
 }
 
 function main() {
-  console.log('🔍 Scanning AiBouMoS YATTAI directory...');
+  console.log('🔍 Scanning SSOT-compliant YATTAI directory: /public/aiboumos/yattai/');
 
   if (!fs.existsSync(YATTAI_DIR)) {
-    console.log('⚠️  YATTAI directory not found, creating...');
+    console.log('⚠️  YATTAI directory not found at /public/aiboumos/yattai/');
+    console.log('Creating directory structure...');
     fs.mkdirSync(YATTAI_DIR, { recursive: true });
-    
-    // Write empty output
-    const outputDir = path.dirname(OUTPUT_JSON);
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir, { recursive: true });
-    }
-    fs.writeFileSync(OUTPUT_JSON, JSON.stringify({ cards: [], generatedAt: new Date().toISOString() }, null, 2));
+    console.log('✅ Directory created. Add AiBou folders with KYARA.md and YATTAi.jpg files.');
     return;
   }
 
@@ -125,23 +164,16 @@ function main() {
   // Sort cards by name
   cards.sort((a, b) => a.name.localeCompare(b.name));
 
-  // Create output
-  const output = {
-    cards,
-    generatedAt: new Date().toISOString(),
-    count: cards.length,
-  };
-
-  // Ensure output directory exists
-  const outputDir = path.dirname(OUTPUT_JSON);
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true });
-  }
-
-  // Write JSON
-  fs.writeFileSync(OUTPUT_JSON, JSON.stringify(output, null, 2));
-
-  console.log(`\n✅ Generated aiboumos.json with ${cards.length} AiBou cards`);
+  console.log(`\n✅ Hydrated ${cards.length} AiBou cards from SSOT`);
+  console.log('📊 Cards available for SSR/build-time rendering');
+  
+  // Return cards for module export (no intermediate JSON file per SSOT)
+  return cards;
 }
 
 main();
+
+// Export for SSR/build-time usage
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { scanYattaiDirectory: main };
+}
