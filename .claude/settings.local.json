@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(node --version:*)",
+      "Bash(where:*)",
+      "Bash(cmd /c \"where node\")",
+      "Bash(gh pr:*)"
+    ]
+  }
+}
