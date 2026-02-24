@@ -1,147 +1,131 @@
 /**
  * cardCatcher.js
- * Scans /public/AiBouMoS/Cards_YATTAi/{AiBou} directories and generates card data
- * Each AiBou must have: YATTAI.md, PROFILE.jpg, and optionally KYARA.md, METALE.md
+ * AiBouMoS Data Hydration Pipeline (Build-time / SSR)
+ *
+ * Scans /public/aiboumos/yattai/{AiBou_ID}/ directories and generates
+ * /public/data/aiboumos.json for the YATTAi Grid and Profile Pages.
+ *
+ * File conventions per AiBou_ID directory:
+ *
+ *  KyaraSynth (required):
+ *    {AiBou_ID}.YATTAi.jpg       → YATTAI Card background image
+ *
+ *  KyaraSynth (optional):
+ *    {AiBou_ID}.KYARA-hero.png   → Profile Page hero avatar
+ *
+ *  KyaraMetale (optional):
+ *    {AiBou_ID}.METALE.md        → Full bio / description narrative
+ *                                  Card: truncated preview | Profile: full text
+ *
+ *  Kyara (optional):
+ *    {AiBou_ID}.KYARA.md         → Frontmatter parsed for:
+ *                                    zodiac_keywords[] → Keyword buttons
+ *                                    house_color       → CSS variable (borders, hover, accents)
+ *                                    name              → Display name (falls back to AiBou_ID)
  */
 
 const fs = require('fs');
 const path = require('path');
 const matter = require('gray-matter');
 
-const YATTAI_DIR = path.join(__dirname, '../public/AiBouMoS/Cards_YATTAi');
+const YATTAI_DIR = path.join(__dirname, '../public/aiboumos/yattai');
 const OUTPUT_JSON = path.join(__dirname, '../public/data/aiboumos.json');
 
-// Required files for a valid AiBou card (case-insensitive patterns)
-const REQUIRED_PATTERNS = {
-  yattai: /\.YATTAi\.md$/i,
-  profile: /\.Profile\.jpg$/i
-};
-const OPTIONAL_PATTERNS = {
-  card: /\.CARD\.md$/i,
-  image: /\.IMAGE\.jpg$/i
-};
-
-function parseYattaiFile(filePath) {
+function parseMarkdown(filePath) {
   const content = fs.readFileSync(filePath, 'utf-8');
   const { data, content: body } = matter(content);
-  
-  return {
-    frontmatter: data,
-    description: body.trim(),
-  };
+  return { frontmatter: data, body: body.trim() };
 }
 
 function findFile(files, pattern) {
   return files.find(f => pattern.test(f));
 }
 
-function scanAiBou(aibouName, aibouPath) {
+function scanAiBou(aibouId, aibouPath) {
   const files = fs.readdirSync(aibouPath);
-  
-  // Check required files using patterns
-  const yattaiFile = findFile(files, REQUIRED_PATTERNS.yattai);
-  const profileFile = findFile(files, REQUIRED_PATTERNS.profile);
-  
-  if (!yattaiFile || !profileFile) {
-    console.warn(`⚠️  ${aibouName} missing required files, skipping...`);
+
+  // KyaraSynth — Required: background image
+  const yattaiImageFile = findFile(files, new RegExp(`^${aibouId}\\.YATTAi\\.jpg$`, 'i'));
+  if (!yattaiImageFile) {
+    console.warn(`⚠️  ${aibouId}: missing ${aibouId}.YATTAi.jpg — skipping`);
     return null;
   }
 
-  // Parse YATTAi.md
-  const yattaiPath = path.join(aibouPath, yattaiFile);
-  const yattai = parseYattaiFile(yattaiPath);
+  // KyaraSynth — Optional: hero avatar
+  const heroImageFile = findFile(files, new RegExp(`^${aibouId}\\.KYARA-hero\\.png$`, 'i'));
 
-  // Build card data
-  const card = {
-    id: aibouName.toLowerCase(),
-    name: yattai.frontmatter.name || aibouName,
-    tagline: yattai.frontmatter.tagline || '',
-    description: yattai.description,
-    role: yattai.frontmatter.role || 'AI Agent',
-    color: yattai.frontmatter.color || '#8040C0',
-    profileImage: `/AiBouMoS/Cards_YATTAi/${aibouName}/${profileFile}`,
-    files: {
-      yattai: `/AiBouMoS/Cards_YATTAi/${aibouName}/${yattaiFile}`,
-    },
+  // KyaraMetale — Optional: description / bio
+  const metaleFile = findFile(files, new RegExp(`^${aibouId}\\.METALE\\.md$`, 'i'));
+  let description = '';
+  if (metaleFile) {
+    const { body } = parseMarkdown(path.join(aibouPath, metaleFile));
+    description = body;
+  }
+
+  // Kyara — Optional: keywords + house color + display name
+  const kyaraFile = findFile(files, new RegExp(`^${aibouId}\\.KYARA\\.md$`, 'i'));
+  let keywords = [];
+  let houseColor = '#8040C0';
+  let displayName = aibouId;
+  if (kyaraFile) {
+    const { frontmatter } = parseMarkdown(path.join(aibouPath, kyaraFile));
+    keywords = Array.isArray(frontmatter.zodiac_keywords) ? frontmatter.zodiac_keywords : [];
+    houseColor = frontmatter.house_color || '#8040C0';
+    displayName = frontmatter.name || aibouId;
+  }
+
+  return {
+    id: aibouId,
+    name: displayName,
+    description,
+    keywords,
+    houseColor,
+    yattaiImage: `/aiboumos/yattai/${aibouId}/${yattaiImageFile}`,
+    heroImage: heroImageFile ? `/aiboumos/yattai/${aibouId}/${heroImageFile}` : '',
   };
-
-  // Add optional files
-  const cardFile = findFile(files, OPTIONAL_PATTERNS.card);
-  if (cardFile) {
-    card.files.card = `/AiBouMoS/Cards_YATTAi/${aibouName}/${cardFile}`;
-  }
-  
-  const imageFile = findFile(files, OPTIONAL_PATTERNS.image);
-  if (imageFile) {
-    card.files.image = `/AiBouMoS/Cards_YATTAi/${aibouName}/${imageFile}`;
-  }
-
-  // Extract commands from YATTAI.md
-  const commandRegex = /```(?:bash|shell)?\n(.*?)\n```/gs;
-  const commands = [];
-  let match;
-  while ((match = commandRegex.exec(yattai.description)) !== null) {
-    commands.push(match[1].trim());
-  }
-  card.commands = commands;
-
-  return card;
 }
 
 function main() {
-  console.log('🔍 Scanning AiBouMoS YATTAI directory...');
+  console.log('🔍 Scanning AiBouMoS YATTAi directory...');
 
   if (!fs.existsSync(YATTAI_DIR)) {
-    console.log('⚠️  YATTAI directory not found, creating...');
+    console.log(`⚠️  Directory not found: ${YATTAI_DIR}`);
+    console.log('    Creating directory...');
     fs.mkdirSync(YATTAI_DIR, { recursive: true });
-    
-    // Write empty output
-    const outputDir = path.dirname(OUTPUT_JSON);
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir, { recursive: true });
-    }
-    fs.writeFileSync(OUTPUT_JSON, JSON.stringify({ cards: [], generatedAt: new Date().toISOString() }, null, 2));
-    return;
   }
 
-  const aibouDirs = fs.readdirSync(YATTAI_DIR)
-    .filter(item => {
-      const itemPath = path.join(YATTAI_DIR, item);
-      return fs.statSync(itemPath).isDirectory();
-    });
+  const outputDir = path.dirname(OUTPUT_JSON);
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+
+  const aibouDirs = fs.readdirSync(YATTAI_DIR).filter(item =>
+    fs.statSync(path.join(YATTAI_DIR, item)).isDirectory()
+  );
+
+  if (aibouDirs.length === 0) {
+    console.log('ℹ️  No AiBou directories found.');
+  }
 
   const cards = [];
-
-  for (const aibouName of aibouDirs) {
-    const aibouPath = path.join(YATTAI_DIR, aibouName);
-    const card = scanAiBou(aibouName, aibouPath);
-    
+  for (const aibouId of aibouDirs) {
+    const card = scanAiBou(aibouId, path.join(YATTAI_DIR, aibouId));
     if (card) {
       cards.push(card);
-      console.log(`✅ ${aibouName}`);
+      console.log(`✅ ${card.name} (${aibouId})`);
     }
   }
 
-  // Sort cards by name
   cards.sort((a, b) => a.name.localeCompare(b.name));
 
-  // Create output
   const output = {
     cards,
     generatedAt: new Date().toISOString(),
     count: cards.length,
   };
 
-  // Ensure output directory exists
-  const outputDir = path.dirname(OUTPUT_JSON);
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true });
-  }
-
-  // Write JSON
   fs.writeFileSync(OUTPUT_JSON, JSON.stringify(output, null, 2));
-
-  console.log(`\n✅ Generated aiboumos.json with ${cards.length} AiBou cards`);
+  console.log(`\n✅ Generated aiboumos.json — ${cards.length} AiBou card(s)`);
 }
 
 main();
